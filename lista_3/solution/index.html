@@ -639,6 +639,53 @@
     </script>
 
     <script>
+      // Script for smooth scrolling when navigating with top menu
+      document.querySelectorAll('#main-navbar a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault(); // Stop default instant jump
+
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+
+          const targetElement = document.querySelector(targetId);
+          if (!targetElement) return;
+
+          const navbarHeight = document.querySelector('#main-navbar').offsetHeight;
+          
+          const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - navbarHeight; // Offsetin by navbar height so it doesn't cover the section
+          const startPosition = window.pageYOffset;
+          const distance = targetPosition - startPosition;
+          
+          const duration = 1200; 
+          let start = null;
+
+          // Function to make the scroll slower in the end
+          const easeInOutQuad = (time, startPos, dist, dur) => {
+            time /= dur / 2;
+            if (time < 1) return dist / 2 * time * time + startPos;
+            time--;
+            return -dist / 2 * (time * (time - 2) - 1) + startPos;
+          };
+
+          // Animation loop
+          window.requestAnimationFrame(function step(timestamp) {
+            if (!start) start = timestamp;
+            const progress = timestamp - start;
+            
+            window.scrollTo(0, easeInOutQuad(progress, startPosition, distance, duration));
+            
+            if (progress < duration) {
+              window.requestAnimationFrame(step);
+            } else {
+              // Ensure it lands exactly on the pixel at the end
+              window.scrollTo(0, targetPosition); 
+            }
+          });
+        });
+      });
+    </script>
+
+    <script>
       // Script for graph creation
       document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('popularDestinationsChart').getContext('2d');
